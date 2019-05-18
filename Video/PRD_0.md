@@ -30,18 +30,35 @@ Finish functions
 
 
 
-#### 2. videos clip and joint 
+#### 2. videos clip and joint using ffmpeg 
 > command line :
 
-~~~ 
-clip :
+~~~ go
+//read info and write into file in json:
+$ ffprobe -v quiet -print_format json -show_format input.mp4 >info.txt
+$ ffprobe -v quiet -print_format json -show_streams input.mp4 >>info.txt
 
+//play video
+$ ffplay input.mp4  
+$ ffplay -vf "drawtext=text='%{pts\:hms}':box=1:x=(w-tw)/2:y=h-(2*lh)" input.mp4 
+
+//clip :
 $ ffmpeg -i input.mp4 -c copy -ss 00:00:15 -t 00:00:10 output2.mp4
 
-merge:
+//merge:
 $ echo file out_Part_1.mp4 > mylist.txt
 $ echo file out_Part_2.mp4 >> mylist.txt
 $ ffmpeg -f concat -i mylist.txt -c copy out_merged.mp4
+
+//merge segments without clip first
+$ ffmpeg -i input.mp4 -filter_complex "[0:v]trim=duration=10[av];[0:a]atrim=duration=10[aa];[0:v]trim=start=30:end=40,setpts=PTS-STARTPTS[bv];[0:a]atrim=start=30:end=40,asetpts=PTS-STARTPTS[ba];[av][bv]concat[outv];[aa][ba]concat=v=0:a=1[outa]" -map [outv] -map [outa] outtest2.mp4
+
+// using duration and start/end
+$ ffmpeg -i input.mp4 -filter_complex "[0:v]trim=duration=5[av];[0:a]atrim=duration=5[aa];[0:v]trim=start=60:end=65,setpts=PTS-STARTPTS[bv];[0:a]atrim=start=100:end=105,asetpts=PTS-STARTPTS[ba];[av][bv]concat[outv];[aa][ba]concat=v=0:a=1[outa]" -map [outv] -map [outa] outtest5.mp4
+
+// using timebase ;before use ffprobe -shwo_streams to checkout the timebase of video and audio
+$ ffmpeg -i input.mp4 -filter_complex "[0:v]trim=start_pts=120000:end_pts=210000,setpts=PTS-STARTPTS[av];
+[0:a]atrim=start_pts=192000:end_pts=336000,asetpts=PTS-STARTPTS[aa];[0:v]trim=start_pts=350000:end_pts=1000000,setpts=PTS-STARTPTS[bv];[0:a]atrim=start_pts=576000:end_pts=1600000,asetpts=PTS-STARTPTS[ba];[av][bv]concat[outv];[aa][ba]concat=v=0:a=1[outa]" -map "[outv]" -map "[outa]" outtest13.mp4
 
 ~~~
 
@@ -64,6 +81,18 @@ $ ffmpeg -f concat -i mylist.txt -c copy out_merged.mp4
 	- [ ] show the total time duration
 
 
+ffmpeg -i input.mp4 -i out_merged.mp4 -i input.mp4 -filter_complex "[0:v]trim=0:5,setpts=PTS-STARTPTS[0v];[0:a]atrim=0:5,asetpts=PTS-STARTPTS[0a];[1:v]trim=9:15,setpts=PTS-STARTPTS[1v];[1:a]atrim=9:15,asetpts=PTS-STARTPTS[1a];[2:v]trim=30:40,setpts=PTS-STARTPTS[2v];[2:a]atrim=30:40,asetpts=PTS-STARTPTS[2a];[0v][0a][1v][1a][2v][2a]concat=n=3:v=1:a=1[outv][outa]" -map "[outv]" -map "[outa]" outtest0.mp4
+
+
+ffmpeg -i input.mp4 -filter_complex "[0:v]trim=duration=5[av];[0:a]atrim=duration=5[aa];[0:v]trim=start=60:end=65,setpts=PTS-STARTPTS[bv];[0:a]atrim=start=100:end=105,asetpts=PTS-STARTPTS[ba];[av][bv]concat[outv];[aa][ba]concat=v=0:a=1[outa]" -map [outv] -map [outa] outtest5.mp4
+
+ffmpeg -i input.mp4 -filter_complex "[0:v]trim=start_pts=120000:end_pts=210000,setpts=PTS-STARTPTS[av];
+[0:a]atrim=start_pts=192000:end_pts=336000,asetpts=PTS-STARTPTS[aa];[0:v]trim=start_pts=350000:end_pts=1000000,setpts=PTS-STARTPTS[bv];[0:a]atrim=start_pts=576000:end_pts=1600000,asetpts=PTS-STARTPTS[ba];[av][bv]concat[outv];[aa][ba]concat=v=0:a=1[outa]" -map "[outv]" -map "[outa]" outtest13.mp4
+
+
+
+
+
 #### 5. [Advance] user interface
 #### 6. [**Advance] 
 
@@ -84,3 +113,13 @@ $ ffmpeg -f concat -i mylist.txt -c copy out_merged.mp4
 >> [Java 8 – Period and Duration examples](https://www.mkyong.com/java8/java-8-period-and-duration-examples/)
 >> [How to parse JSON in Java
 ](https://stackoverflow.com/questions/2591098/how-to-parse-json-in-java)
+>> [Mac 配置FFmpeg环境](https://blog.csdn.net/StoneNotes/article/details/68958332)
+>> [Mac OS X Terminal 101：终端使用初级教程](https://www.renfei.org/blog/mac-os-x-terminal-101.html)
+>> [Java获取当前路径](https://www.cnblogs.com/diyunpeng/archive/2011/06/06/2073567.html)
+
+> Useful link
+> > [FFmpeg Bug Tracker and Wiki](https://trac.ffmpeg.org/wiki)
+> > > [Concatenating media files](https://trac.ffmpeg.org/wiki/Concatenate)
+> 
+> sublime : set defualt open application
+> > $ alias subl="'/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl'"
