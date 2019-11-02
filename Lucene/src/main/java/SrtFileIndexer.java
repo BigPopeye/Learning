@@ -61,7 +61,7 @@ public class SrtFileIndexer {
 
     public static void main(String[] args){
         String indexDir = "dataIndex";
-        String dataDir = "data";
+        String dataDir = "mid_data";
         SrtFileIndexer indexer = null;
         int numIndexed = 0;
         long start = System.currentTimeMillis();

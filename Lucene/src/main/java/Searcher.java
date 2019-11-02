@@ -16,24 +16,24 @@ import org.apache.lucene.store.FSDirectory;
 public class Searcher {
     public static void search(String indexDir, String q) throws Exception {
 
-        // 得到读取索引文件的路径
+        // get index doc path
         Directory dir = FSDirectory.open(Paths.get(indexDir));
-        // 通过dir得到的路径下的所有的文件
+        // get all the indexed files
         IndexReader reader = DirectoryReader.open(dir);
-        // 建立索引查询器
+        // build index searcher
         IndexSearcher is = new IndexSearcher(reader);
-        // 实例化分析器
+        // instantiate analyzer
         Analyzer analyzer = new StandardAnalyzer();
-        // 建立查询解析器
+        // build search parser
         /**
-         * 第一个参数是要查询的字段； 第二个参数是分析器Analyzer
+         * first parameter : query key, second parameter : Analyzer
          */
         QueryParser parser = new QueryParser("contents", analyzer);
-        // 根据传进来的p查找
+        // parse user input q
         Query query = parser.parse(q);
-        // 计算索引开始时间
+        // calculate time
         long start = System.currentTimeMillis();
-        // 开始查询
+        // begin query
         /**
          * 第一个参数是通过传过来的参数来查找得到的query； 第二个参数是要出查询的行数
          */
@@ -50,6 +50,7 @@ public class Searcher {
         for (ScoreDoc scoreDoc : hits.scoreDocs) {
             Document doc = is.doc(scoreDoc.doc);
             System.out.println(doc.get("fullpath"));
+            System.out.println(scoreDoc.score);
         }
 
         // 关闭reader
@@ -59,7 +60,7 @@ public class Searcher {
     public static void main(String[] args) {
         String indexDir = "dataindex";
         //我们要搜索的内容
-        String q = "sailor";
+        String q = "Last AND night AND I AND had AND a AND dream";
         try {
             search(indexDir, q);
         } catch (Exception e) {
